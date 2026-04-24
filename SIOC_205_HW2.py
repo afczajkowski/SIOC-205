@@ -1,11 +1,3 @@
-"""
-SIOC205 / ECP HW2
-Python version using the MATLAB .mat files directly
-
-Files expected in the same folder as this script:
-    - CC_adcp.mat
-    - CW_ctds.mat
-"""
 
 from pathlib import Path
 
@@ -15,9 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 
 
-# -----------------------------
-# User settings
-# -----------------------------
+# settings
 DATA_DIR = Path(".")
 ADCP_FILE = DATA_DIR / "/Users/auroraczajkowski/Desktop/SIOC 205 /HW 2/exchangeData/CC_adcp.mat"
 CTD_FILE = DATA_DIR / "/Users/auroraczajkowski/Desktop/SIOC 205 /HW 2/exchangeData/CW_ctds.mat"
@@ -27,9 +17,7 @@ FIG_DIR = DATA_DIR / "figures"
 FIG_DIR.mkdir(exist_ok=True)
 
 
-# -----------------------------
-# Helpers
-# -----------------------------
+# helpers
 def matlab_datenum_to_datetime(dn):
     """
     Convert MATLAB datenum to pandas datetime.
@@ -91,9 +79,7 @@ def running_nanrange(x, window):
     return (rmax - rmin).to_numpy()
 
 
-# -----------------------------
-# Helper: choose robust spring / neap windows
-# -----------------------------
+# spring/neap window selection 
 def choose_spring_neap_windows(time, water_level, window_hours=25, search_hours=24, edge_buffer_hours=36):
     """
     Choose one spring and one neap window from tidal range, while avoiding:
@@ -164,9 +150,7 @@ def choose_spring_neap_windows(time, water_level, window_hours=25, search_hours=
     return spring_slice, neap_slice, tide_range
 
 
-# -----------------------------
-# Load MATLAB files
-# -----------------------------
+# Load MATLAB files 
 adcp_mat = loadmat(ADCP_FILE, squeeze_me=True, struct_as_record=False)
 ctd_mat = loadmat(CTD_FILE, squeeze_me=True, struct_as_record=False)
 
@@ -209,9 +193,7 @@ print(f"s_sigma shape  = {s_sigma.shape}")
 print(f"density shape  = {cw_density.shape}")
 
 
-# -----------------------------
-# 1) Plot tidal circulation over depth and time
-# -----------------------------
+# Figure 1: Plot tidal circulation over depth and time
 fig1, ax = plt.subplots(figsize=(12, 5))
 
 pcm = ax.pcolormesh(
@@ -232,9 +214,7 @@ if SAVE_FIGURES:
     fig1.savefig(FIG_DIR / "01_tidal_circulation_depth_time_mat.png", dpi=200)
 
 
-# -----------------------------
-# 2) Residual circulation profile + mean density profile
-# -----------------------------
+# Figure 2: Residual circulation profile + mean density profile
 # Use sigma-coordinate velocity for time-mean residual.
 u_residual_sigma = np.nanmean(s_sigma, axis=1)   # mean over time, keep vertical structure
 
@@ -262,9 +242,8 @@ if SAVE_FIGURES:
     fig2.savefig(FIG_DIR / "02_residual_velocity_density_profiles_mat.png", dpi=200)
 
 
-# -----------------------------
-# 3) Spring vs neap residual circulation
-# -----------------------------
+# Figure 3: Spring vs neap residual circulation
+
 spring_slice, neap_slice, tide_range = choose_spring_neap_windows(
     time_adcp,
     wlADCP,
@@ -323,9 +302,7 @@ fig3b.tight_layout()
 if SAVE_FIGURES:
     fig3b.savefig(FIG_DIR / "03b_spring_neap_windows_mat.png", dpi=200)
 
-# -----------------------------
 # Extra: Godin-filtered residual over time
-# -----------------------------
 dt_hours = np.median(np.diff(time_adcp).astype("timedelta64[s]").astype(float)) / 3600.0
 u_godin_sigma = godin_filter_2d(s_sigma, dt_hours=dt_hours)
 
@@ -346,9 +323,7 @@ if SAVE_FIGURES:
     fig4.savefig(FIG_DIR / "04_godin_filtered_residual_mat.png", dpi=200)
 
 
-# -----------------------------
-# Useful printout for writeup
-# -----------------------------
+# Useful printouts 
 print("\nSpring window:")
 print(f"  start = {t_spring[0]}")
 print(f"  end   = {t_spring[-1]}")
